@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Board Game Companion</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        #timer {
+            font-size: 80px;
+            text-align: center;
+            margin-top: 20%;
+        }
+        #score {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 50px;
+        }
+        #score-value {
+            font-size: 60px;
+            margin: 0 20px;
+        }
+        .score-button {
+            font-size: 40px;
+            width: 80px;
+            height: 80px;
+            border: none;
+            border-radius: 40px;
+            background-color: #007BFF;
+            color: white;
+        }
+        .score-button:active {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="timer">0:00</div>
+
+    <div id="score">
+        <button id="decrease-score" class="score-button">-</button>
+        <div id="score-value">0</div>
+        <button id="increase-score" class="score-button">+</button>
+    </div>
+
+    <!-- Audio elements for sounds -->
+    <audio id="start-sound" src="start-sound.mp3"></audio>
+    <audio id="stop-sound" src="stop-sound.mp3"></audio>
+    <audio id="two-minute-sound" src="two-minute-sound.mp3"></audio>
+    <audio id="after-one-minute-sound" src="after-one-minute-sound.mp3"></audio>
+
+    <script>
+        let timerDisplay = document.getElementById('timer');
+        let scoreValue = document.getElementById('score-value');
+        let increaseScoreButton = document.getElementById('increase-score');
+        let decreaseScoreButton = document.getElementById('decrease-score');
+
+        let timerInterval;
+        let startTime;
+        let elapsedTime = 0;
+        let running = false;
+
+        let startSound = document.getElementById('start-sound');
+        let stopSound = document.getElementById('stop-sound');
+        let twoMinuteSound = document.getElementById('two-minute-sound');
+        let afterOneMinuteSound = document.getElementById('after-one-minute-sound');
+
+        function formatTime(milliseconds) {
+            let totalSeconds = Math.floor(milliseconds / 1000);
+            let minutes = Math.floor(totalSeconds / 60);
+            let seconds = totalSeconds % 60;
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimer() {
+            elapsedTime = Date.now() - startTime;
+            timerDisplay.textContent = formatTime(elapsedTime);
+
+            if (elapsedTime >= 120000) { // 2 minutes in milliseconds
+                stopTimer();
+                twoMinuteSound.play();
+            }
+        }
+
+        function startTimer() {
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(updateTimer, 100);
+            running = true;
+            startSound.play();
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            running = false;
+
+            if (elapsedTime >= 60000) { // After 1 minute
+                afterOneMinuteSound.play();
+            } else {
+                stopSound.play();
+            }
+        }
+
+        function resetTimer() {
+            elapsedTime = 0;
+            timerDisplay.textContent = "0:00";
+        }
+
+        document.body.addEventListener('click', function(event) {
+            // Ignore clicks on score buttons
+            if (event.target.classList.contains('score-button')) return;
+
+            if (!running) {
+                if (elapsedTime === 0) {
+                    startTimer();
+                } else {
+                    resetTimer();
+                }
+            } else {
+                stopTimer();
+            }
+        });
+
+        increaseScoreButton.addEventListener('click', function() {
+            scoreValue.textContent = parseInt(scoreValue.textContent) + 1;
+        });
+
+        decreaseScoreButton.addEventListener('click', function() {
+            scoreValue.textContent = parseInt(scoreValue.textContent) - 1;
+        });
+
+    </script>
+
+</body>
+</html>
